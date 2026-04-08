@@ -15,6 +15,7 @@ Proyecto de automatización de pruebas funcionales para la aplicación demo de *
 - [Escenarios Cubiertos](#escenarios-cubiertos)
 - [Reportes](#reportes)
 - [Configuración de Navegador](#configuración-de-navegador)
+- [CI/CD](#cicd)
 
 ---
 
@@ -43,6 +44,9 @@ Suite de pruebas end-to-end que valida los flujos principales de [OrangeHRM](htt
 
 ```
 AutomationProject/
+├── .github/
+│   └── workflows/
+│       └── ci.yml               # Pipeline de GitHub Actions (CI/CD)
 ├── pom.xml                          # Configuración de Maven y dependencias
 └── src/
     └── test/
@@ -194,3 +198,33 @@ Step Definitions  →  Page Objects  →  WebDriver (Selenium)
 - Cada página de la aplicación tiene su propia clase en `pages/`, encapsulando los selectores y acciones.
 - `DriverManager` usa `ThreadLocal<WebDriver>` para garantizar aislamiento entre hilos en ejecuciones paralelas.
 - `Hooks` gestiona el ciclo de vida del driver y aplica precondiciones (login automático) según el tag del escenario.
+
+---
+
+## CI/CD
+
+El proyecto incluye un pipeline de **GitHub Actions** en `.github/workflows/ci.yml` que se ejecuta automáticamente en:
+
+- Cada `push` a las ramas `main` o `master`
+- Cada `pull request` hacia esas ramas
+- Manualmente desde la pestaña **Actions** del repositorio (`workflow_dispatch`)
+
+### Pasos del pipeline
+
+| Paso | Descripción |
+|---|---|
+| **Checkout** | Descarga el código del repositorio |
+| **Set up Java 17** | Configura el JDK Temurin 17 con caché de Maven |
+| **Install Chrome** | Instala Google Chrome en el runner |
+| **Run tests** | Ejecuta `mvn test -Dbrowser=chrome` |
+| **Upload HTML report** | Sube `target/cucumber-report.html` como artefacto (30 días) |
+| **Upload JSON report** | Sube `target/cucumber-report.json` como artefacto (30 días) |
+| **Upload Surefire reports** | Sube reportes de Surefire solo si el job falla (7 días) |
+
+### Artefactos generados
+
+Tras cada ejecución del pipeline, los reportes quedan disponibles en la pestaña **Actions → Artifacts** de GitHub:
+
+- `cucumber-report` — Reporte HTML visual
+- `cucumber-report-json` — Datos JSON para integraciones externas
+- `surefire-reports` — Detalle de fallos de JUnit (solo en caso de error)
