@@ -14,3 +14,4 @@ Característica: Login en OrangeHRM
     | user  | password |
     | Admin | admin123 |
 
+

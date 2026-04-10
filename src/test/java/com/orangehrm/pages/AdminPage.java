@@ -3,7 +3,9 @@ package com.orangehrm.pages;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.List;
 
 public class AdminPage extends BasePage {
@@ -19,7 +21,8 @@ public class AdminPage extends BasePage {
     private final By employeeNameInput   = By.xpath("//label[text()='Employee Name']/following::input[1]");
     private final By statusDropdown      = By.xpath("//label[text()='Status']/following::div[contains(@class,'oxd-select-text')][1]");
     private final By statusEnable        = By.xpath("//div[@role='listbox']//span[text()='Enabled']");
-    private final By statusDisable       = By.xpath("//div[@role='listbox']//span[text()='Disabled']");
+    private final By statusDisable           = By.xpath("//div[@role='listbox']//span[text()='Disabled']");
+    private final By employeeNameAutocomplete = By.xpath("//div[@role='option'][1]");
 
     // Botones principales
     private final By addButton           = By.xpath("//button[normalize-space()='Add']");
@@ -34,17 +37,54 @@ public class AdminPage extends BasePage {
     }
 
     public void assertOnAdminPage() {
-        wait.until(ExpectedConditions.urlContains("admin/viewSystemUsers"));
+        new WebDriverWait(driver, Duration.ofSeconds(30))
+                .until(ExpectedConditions.urlContains("admin/viewSystemUsers"));
     }
 
     public void clickAdd() {
         wait.until(ExpectedConditions.elementToBeClickable(addButton)).click();
     }
 
+    public void selectUserRoleFilter(String role) {
+        wait.until(ExpectedConditions.elementToBeClickable(userRoleDropdown)).click();
+        By option = role.equalsIgnoreCase("ESS") ? userRoleESS : userRoleAdmin;
+        wait.until(ExpectedConditions.elementToBeClickable(option)).click();
+    }
+
+    public void selectStatusFilter(String status) {
+        wait.until(ExpectedConditions.elementToBeClickable(statusDropdown)).click();
+        By option = status.equalsIgnoreCase("Enabled") ? statusEnable : statusDisable;
+        wait.until(ExpectedConditions.elementToBeClickable(option)).click();
+    }
+
     public void searchByUsername(String username) {
         WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(searchUsernameInput));
         input.clear();
         input.sendKeys(username);
+        wait.until(ExpectedConditions.elementToBeClickable(searchButton)).click();
+    }
+
+    public void searchByUsernameAndRole(String username, String role) {
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(searchUsernameInput));
+        input.clear();
+        input.sendKeys(username);
+        selectUserRoleFilter(role);
+        wait.until(ExpectedConditions.elementToBeClickable(searchButton)).click();
+    }
+
+    public void typeEmployeeNameFilter(String name) {
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(employeeNameInput));
+        input.clear();
+        input.sendKeys(name);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(employeeNameAutocomplete)).click();
+    }
+
+    public void searchByAllFilters(String username, String role, String employeeName) {
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(searchUsernameInput));
+        input.clear();
+        input.sendKeys(username);
+        selectUserRoleFilter(role);
+        typeEmployeeNameFilter(employeeName);
         wait.until(ExpectedConditions.elementToBeClickable(searchButton)).click();
     }
 
