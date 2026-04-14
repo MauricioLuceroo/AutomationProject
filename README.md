@@ -13,8 +13,10 @@ Proyecto de automatización de pruebas funcionales para la aplicación demo de *
 - [Instalación](#instalación)
 - [Ejecución](#ejecución)
 - [Escenarios Cubiertos](#escenarios-cubiertos)
+- [Notas de PIM (IDs)](#notas-de-pim-ids)
 - [Reportes](#reportes)
 - [Configuración de Navegador](#configuración-de-navegador)
+- [Publicar en GitHub](#publicar-en-github)
 - [CI/CD](#cicd)
 
 ---
@@ -127,6 +129,16 @@ mvn test -Dbrowser=edge
 mvn test -Dcucumber.filter.tags="@login"
 ```
 
+### Ejecutar tests de PIM (positivos y negativos)
+
+```bash
+# Positivos
+mvn test -Dcucumber.filter.tags="@pim"
+
+# Negativos
+mvn test -Dcucumber.filter.tags="@pim-negativo"
+```
+
 ### Ejecutar en modo depuración (puerto 5005)
 
 ```bash
@@ -147,6 +159,22 @@ mvn test -Dmaven.surefire.debug
 |---|---|
 | Crear nuevo usuario | Navega al módulo Admin, abre el formulario de alta y registra un nuevo usuario |
 | Buscar y eliminar usuario | Busca el usuario creado por nombre de usuario y lo elimina del sistema |
+
+### `pim.feature` — Gestión de Empleados (módulo PIM)
+| Escenario | Descripción |
+|---|---|
+| Agregar empleado | Entra a PIM, abre Add Employee, completa datos y guarda |
+| Buscar y eliminar por ID | Registra un empleado, lo busca por `Employee Id` y lo elimina |
+| Negativo: ID inexistente | Busca un `Employee Id` inexistente y valida que no hay resultados |
+| Negativo: apellido requerido | Intenta guardar sin apellido y valida el mensaje `Required` |
+
+---
+
+## Notas de PIM (IDs)
+
+- El flujo funcional de búsqueda/borrado usa el `Employee Id` de 4 dígitos generado en `PimSteps`.
+- Después de guardar o borrar, OrangeHRM puede mostrar en algunas vistas/URL un identificador interno (por ejemplo `empNumber`) que suele ser más largo.
+- Ese identificador interno no reemplaza el `Employee Id` usado por el test para buscar y borrar.
 
 ---
 
@@ -178,6 +206,25 @@ El navegador se puede indicar de tres formas (en orden de prioridad):
 3. **Valor por defecto**: `CHROME`
 
 Navegadores soportados: `chrome`, `firefox`, `edge`, `safari`.
+
+---
+
+## Publicar en GitHub
+
+```bash
+git add README.md
+git commit -m "docs: actualizar flujo PIM e IDs"
+git push origin main
+```
+
+Si trabajas en rama de feature:
+
+```bash
+git checkout -b feature/pim-readme
+git add README.md
+git commit -m "docs: actualizar flujo PIM e IDs"
+git push -u origin feature/pim-readme
+```
 
 ---
 
