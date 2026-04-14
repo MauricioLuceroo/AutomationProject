@@ -13,8 +13,10 @@ Proyecto de automatización de pruebas funcionales para la aplicación demo de *
 - [Instalación](#instalación)
 - [Ejecución](#ejecución)
 - [Escenarios Cubiertos](#escenarios-cubiertos)
+- [Notas de PIM (IDs)](#notas-de-pim-ids)
 - [Reportes](#reportes)
 - [Configuración de Navegador](#configuración-de-navegador)
+- [Publicar en GitHub](#publicar-en-github)
 - [CI/CD](#cicd)
 
 ---
@@ -127,6 +129,16 @@ mvn test -Dbrowser=edge
 mvn test -Dcucumber.filter.tags="@login"
 ```
 
+### Ejecutar tests de PIM (positivos y negativos)
+
+```bash
+# Positivos
+mvn test -Dcucumber.filter.tags="@pim"
+
+# Negativos
+mvn test -Dcucumber.filter.tags="@pim-negativo"
+```
+
 ### Ejecutar en modo depuración (puerto 5005)
 
 ```bash
@@ -148,6 +160,22 @@ mvn test -Dmaven.surefire.debug
 | Crear nuevo usuario | Navega al módulo Admin, abre el formulario de alta y registra un nuevo usuario |
 | Buscar y eliminar usuario | Busca el usuario creado por nombre de usuario y lo elimina del sistema |
 
+### `pim.feature` — Gestión de Empleados (módulo PIM)
+| Escenario | Descripción |
+|---|---|
+| Agregar empleado | Entra a PIM, abre Add Employee, completa datos y guarda |
+| Buscar y eliminar por ID | Registra un empleado, lo busca por `Employee Id` y lo elimina |
+| Negativo: ID inexistente | Busca un `Employee Id` inexistente y valida que no hay resultados |
+| Negativo: apellido requerido | Intenta guardar sin apellido y valida el mensaje `Required` |
+
+---
+
+## Notas de PIM (IDs)
+
+- El flujo funcional de búsqueda/borrado usa el `Employee Id` de 4 dígitos generado en `PimSteps`.
+- Después de guardar o borrar, OrangeHRM puede mostrar en algunas vistas/URL un identificador interno (por ejemplo `empNumber`) que suele ser más largo.
+- Ese identificador interno no reemplaza el `Employee Id` usado por el test para buscar y borrar.
+
 ---
 
 ## Reportes
@@ -158,6 +186,8 @@ Tras ejecutar los tests, se generan automáticamente en la carpeta `target/`:
 |---|---|---|
 | `target/cucumber-report.html` | HTML | Reporte visual con detalle de cada escenario |
 | `target/cucumber-report.json` | JSON | Datos crudos del resultado, útil para integraciones CI/CD |
+| `target/allure-results/allure-results-YYYYMMDD-HHMMSS/` | Archivos Allure | Resultados crudos con timestamp |
+| `target/allure-reports/allure-report-YYYYMMDD-HHMMSS/index.html` | HTML (Allure) | Reporte visual avanzado de Allure con timestamp |
 
 Para abrir el reporte HTML:
 
@@ -166,6 +196,41 @@ start target/cucumber-report.html   # Windows
 open target/cucumber-report.html    # macOS
 xdg-open target/cucumber-report.html # Linux
 ```
+
+### Generar y abrir reporte de Allure
+
+```bash
+mvn test
+```
+
+> `mvn test` ya genera el reporte de Allure automáticamente.
+
+Archivo principal de Allure (ábrelo en navegador):
+
+```bash
+target/allure-reports/allure-report-YYYYMMDD-HHMMSS/index.html
+```
+
+En Windows:
+
+```bash
+start target\allure-reports\allure-report-*\index.html
+```
+
+Notas:
+
+- Los reportes anteriores se conservan (no se borran automáticamente).
+- Cada ejecución genera una nueva carpeta con timestamp para resultados y reporte.
+
+### Ver el último Allure desde GitHub
+
+Si habilitas **GitHub Pages** en el repositorio, el pipeline publica automáticamente el último reporte en:
+
+```text
+https://<TU_USUARIO>.github.io/<TU_REPO>/allure/latest/index.html
+```
+
+En GitHub: `Settings` → `Pages` → `Source` = `GitHub Actions`.
 
 ---
 
@@ -178,6 +243,25 @@ El navegador se puede indicar de tres formas (en orden de prioridad):
 3. **Valor por defecto**: `CHROME`
 
 Navegadores soportados: `chrome`, `firefox`, `edge`, `safari`.
+
+---
+
+## Publicar en GitHub
+
+```bash
+git add README.md
+git commit -m "docs: actualizar flujo PIM e IDs"
+git push origin main
+```
+
+Si trabajas en rama de feature:
+
+```bash
+git checkout -b feature/pim-readme
+git add README.md
+git commit -m "docs: actualizar flujo PIM e IDs"
+git push -u origin feature/pim-readme
+```
 
 ---
 

@@ -16,9 +16,22 @@ public class AdminSteps {
 
     private String lastSearchedUsername;
     private String capturedUsername;
+    private String capturedRole;
+    private String capturedEmployee;
+
+    private static final String[] ROLES    = {"ESS", "Admin"};
+    private static final String[] STATUSES = {"Enabled", "Disabled"};
 
     private static String generarUsername() {
-        return "autouser_" + System.currentTimeMillis();
+        return "autouser_" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+    }
+
+    private static String randomRole() {
+        return ROLES[(int) (Math.random() * ROLES.length)];
+    }
+
+    private static String randomStatus() {
+        return STATUSES[(int) (Math.random() * STATUSES.length)];
     }
 
     @Dado("que el usuario hace click en Admin en el menú lateral")
@@ -29,6 +42,7 @@ public class AdminSteps {
     @Dado("que existe un usuario de prueba con rol {string}, empleado {string}, estado {string} y contraseña {string}")
     public void crearUsuarioDePrueba(String rol, String empleado, String estado, String password) {
         capturedUsername = generarUsername();
+        capturedRole = rol;
         adminPage.clickAdminMenu();
         adminPage.clickAdd();
         addUserPage.selectUserRole(rol);
@@ -64,14 +78,16 @@ public class AdminSteps {
 
     @Cuando("busca el usuario con nombre de usuario {string}")
     public void buscarUsuario(String username) {
+        // Nota: El username debe ser válido (existente en el sistema)
         lastSearchedUsername = username;
         adminPage.searchByUsername(username);
     }
 
     @Cuando("busca el usuario por el nombre de usuario generado")
     public void buscarPorUsernameGenerado() {
+        // Usa el username capturado durante la creación del usuario (válido en el sistema)
         lastSearchedUsername = capturedUsername;
-        adminPage.searchByUsername(capturedUsername);
+        adminPage.searchByUsernameAndRole(capturedUsername, capturedRole);
     }
 
     @Y("elimina el usuario encontrado")
@@ -83,5 +99,41 @@ public class AdminSteps {
     public void verificarEliminacion() {
         assertTrue(adminPage.isUserAbsentInResults(lastSearchedUsername),
                 "El usuario '" + lastSearchedUsername + "' aún aparece en los resultados tras la eliminación");
+    }
+
+    @Y("rellena el formulario con datos aleatorios")
+    public void rellenarFormularioAleatorio() {
+        capturedUsername = generarUsername();
+        capturedRole     = randomRole();
+        capturedEmployee = "Peter Mac Anderson";
+        addUserPage.selectUserRole(capturedRole);
+        addUserPage.typeEmployeeName(capturedEmployee);
+        addUserPage.selectStatus(randomStatus());
+        addUserPage.enterUsername(capturedUsername);
+        addUserPage.enterPassword("Test@1234!");
+        addUserPage.enterConfirmPassword("Test@1234!");
+    }
+
+    @Dado("que existe un usuario de prueba con datos aleatorios")
+    public void crearUsuarioDePruebaAleatorio() {
+        capturedUsername = generarUsername();
+        capturedRole     = randomRole();
+        capturedEmployee = "Peter Mac Anderson";
+        adminPage.clickAdminMenu();
+        adminPage.clickAdd();
+        addUserPage.selectUserRole(capturedRole);
+        addUserPage.typeEmployeeName(capturedEmployee);
+        addUserPage.selectStatus(randomStatus());
+        addUserPage.enterUsername(capturedUsername);
+        addUserPage.enterPassword("Test@1234!");
+        addUserPage.enterConfirmPassword("Test@1234!");
+        addUserPage.clickSave();
+        adminPage.assertOnAdminPage();
+    }
+
+    @Cuando("busca el usuario usando todos los filtros disponibles")
+    public void buscarConTodosLosFiltros() {
+        lastSearchedUsername = capturedUsername;
+        adminPage.searchByAllFilters(capturedUsername, capturedRole, capturedEmployee);
     }
 }
