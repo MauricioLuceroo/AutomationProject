@@ -7,9 +7,18 @@ on:
     branches: [ "main", "master" ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   test:
-    name: Run E2E Tests
+    name: Run E2E Tests (PIM → Admin)
     runs-on: ubuntu-latest
 
     steps:
@@ -26,10 +35,42 @@ jobs:
       - name: Install Google Chrome
         uses: browser-actions/setup-chrome@v1
 
-      - name: Run tests
-        run: mvn test -Dbrowser=chrome
+      - name: Run PIM tests (first)
+        id: pim_tests
+        continue-on-error: true
+        run: mvn test -Dbrowser=chrome -Dcucumber.filter.tags='@pim or @pim-negativo'
         env:
           CI: true
+
+      - name: Stage Allure results from PIM
+        if: always()
+        run: |
+          mkdir -p target/allure-results-combined
+          if [ -d target/allure-results ] && [ -n "$(ls -A target/allure-results 2>/dev/null)" ]; then
+            cp -R target/allure-results/. target/allure-results-combined/
+          fi
+
+      - name: Run Admin and Login tests (after PIM)
+        id: admin_tests
+        continue-on-error: true
+        run: mvn test -Dbrowser=chrome -Dcucumber.filter.tags='@admin or @login'
+        env:
+          CI: true
+
+      - name: Merge Allure results and generate HTML report
+        if: always()
+        run: |
+          mkdir -p target/allure-results-combined
+          if [ -d target/allure-results ] && [ -n "$(ls -A target/allure-results 2>/dev/null)" ]; then
+            cp -R target/allure-results/. target/allure-results-combined/
+          fi
+          rm -rf target/allure-results
+          mv target/allure-results-combined target/allure-results
+          mvn allure:report
+
+      - name: Fail job if PIM or Admin tests failed
+        if: always() && (steps.pim_tests.outcome == 'failure' || steps.admin_tests.outcome == 'failure')
+        run: exit 1
 
       - name: Upload Cucumber HTML report
         if: always()
@@ -47,6 +88,14 @@ jobs:
           path: target/cucumber-report.json
           retention-days: 30
 
+      - name: Upload Allure HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-html
+          path: target/site/allure-maven-plugin/
+          retention-days: 30
+
       - name: Upload Surefire reports on failure
         if: failure()
         uses: actions/upload-artifact@v4
@@ -55,13 +104,12 @@ jobs:
           path: target/surefire-reports/
           retention-days: 7
 
-      - name: Prepare latest Allure report for GitHub Pages
+      - name: Prepare Allure for GitHub Pages
         if: always()
         run: |
           mkdir -p target/github-pages/allure/latest
-          latest_report=$(ls -dt target/allure-reports/allure-report-* 2>/dev/null | head -n 1)
-          if [ -n "$latest_report" ]; then
-            cp -R "$latest_report"/. target/github-pages/allure/latest/
+          if [ -d target/site/allure-maven-plugin ]; then
+            cp -R target/site/allure-maven-plugin/. target/github-pages/allure/latest/
           fi
 
       - name: Upload Pages artifact
@@ -75,9 +123,6 @@ jobs:
     needs: test
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
