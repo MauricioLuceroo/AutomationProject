@@ -8,7 +8,7 @@ public class AddUserPage extends BasePage {
 
     private final By userRoleDropdown      = By.xpath("//label[text()='User Role']/following::div[contains(@class,'oxd-select-text')][1]");
     private final By employeeNameInput     = By.xpath("//label[text()='Employee Name']/following::input[1]");
-    private final By autocompleteOption    = By.xpath("//div[@role='option'][1]");
+    private final By employeeListbox       = By.xpath("//div[@role='listbox']");
     private final By statusDropdown        = By.xpath("//label[text()='Status']/following::div[contains(@class,'oxd-select-text')][1]");
     private final By usernameInput         = By.xpath("//label[text()='Username']/following::input[1]");
     private final By passwordInput         = By.xpath("//label[text()='Password']/following::input[1]");
@@ -25,9 +25,22 @@ public class AddUserPage extends BasePage {
         WebElement input = wait.until(ExpectedConditions.elementToBeClickable(employeeNameInput));
         input.clear();
         input.sendKeys(name);
-        WebElement option = wait.until(ExpectedConditions.elementToBeClickable(autocompleteOption));
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(employeeListbox));
+
+        By employeeOption = By.xpath(
+                "//div[@role='listbox']//div[@role='option']//span[contains(normalize-space(),'" + name + "')]");
+        By firstEmployeeOption = By.xpath("//div[@role='listbox']//div[@role='option'][1]");
+
+        WebElement option;
+        try {
+            option = wait.until(ExpectedConditions.elementToBeClickable(employeeOption));
+        } catch (Exception ignored) {
+            option = wait.until(ExpectedConditions.elementToBeClickable(firstEmployeeOption));
+        }
         option.click();
-        // Esperar que el valor quede registrado en el campo antes de continuar
+
+        // Confirma que se selecciono una opcion del listbox
         wait.until(ExpectedConditions.attributeToBeNotEmpty(
                 wait.until(ExpectedConditions.visibilityOfElementLocated(employeeNameInput)), "value"));
     }

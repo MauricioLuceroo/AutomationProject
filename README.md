@@ -186,8 +186,8 @@ Tras ejecutar los tests, se generan automáticamente en la carpeta `target/`:
 |---|---|---|
 | `target/cucumber-report.html` | HTML | Reporte visual con detalle de cada escenario |
 | `target/cucumber-report.json` | JSON | Datos crudos del resultado, útil para integraciones CI/CD |
-| `target/allure-results/allure-results-YYYYMMDD-HHMMSS/` | Archivos Allure | Resultados crudos con timestamp |
-| `target/allure-reports/allure-report-YYYYMMDD-HHMMSS/index.html` | HTML (Allure) | Reporte visual avanzado de Allure con timestamp |
+| `target/allure-results/` | Archivos Allure | Resultados crudos (JSON/XML) generados al ejecutar tests |
+| `target/site/allure-maven-plugin/index.html` | HTML (Allure) | Reporte visual Allure (generado con `mvn allure:report`) |
 
 Para abrir el reporte HTML:
 
@@ -199,28 +199,35 @@ xdg-open target/cucumber-report.html # Linux
 
 ### Generar y abrir reporte de Allure
 
+Después de ejecutar tests:
+
 ```bash
-mvn test
+mvn allure:report
 ```
 
-> `mvn test` ya genera el reporte de Allure automáticamente.
-
-Archivo principal de Allure (ábrelo en navegador):
+Archivo principal (ábrelo en el navegador):
 
 ```bash
-target/allure-reports/allure-report-YYYYMMDD-HHMMSS/index.html
+target/site/allure-maven-plugin/index.html
 ```
 
 En Windows:
 
 ```bash
-start target\allure-reports\allure-report-*\index.html
+start target\site\allure-maven-plugin\index.html
 ```
 
-Notas:
+### Orden recomendado: PIM y luego Admin
 
-- Los reportes anteriores se conservan (no se borran automáticamente).
-- Cada ejecución genera una nueva carpeta con timestamp para resultados y reporte.
+En el módulo **Admin → Add User**, el campo *Employee Name* es un autocompletado sobre empleados existentes. Conviene ejecutar primero los escenarios **PIM** (crean empleados en el demo) y después **Admin** y **Login**:
+
+```bash
+mvn test "-Dcucumber.filter.tags=@pim or @pim-negativo"
+mvn test "-Dcucumber.filter.tags=@admin or @login"
+mvn allure:report
+```
+
+En **PowerShell**, las comillas alrededor del parámetro `-Dcucumber.filter.tags=...` son obligatorias si el valor lleva espacios.
 
 ### Ver el último Allure desde GitHub
 
@@ -300,15 +307,20 @@ El proyecto incluye un pipeline de **GitHub Actions** en `.github/workflows/ci.y
 | **Checkout** | Descarga el código del repositorio |
 | **Set up Java 17** | Configura el JDK Temurin 17 con caché de Maven |
 | **Install Chrome** | Instala Google Chrome en el runner |
-| **Run tests** | Ejecuta `mvn test -Dbrowser=chrome` |
-| **Upload HTML report** | Sube `target/cucumber-report.html` como artefacto (30 días) |
-| **Upload JSON report** | Sube `target/cucumber-report.json` como artefacto (30 días) |
-| **Upload Surefire reports** | Sube reportes de Surefire solo si el job falla (7 días) |
+| **Run PIM tests** | Ejecuta primero `@pim` y `@pim-negativo` (`mvn test -Dbrowser=chrome`) |
+| **Run Admin + Login** | Luego ejecuta `@admin` y `@login` |
+| **Merge Allure + report** | Une los resultados de ambas corridas y ejecuta `mvn allure:report` |
+| **Upload reports** | Sube Cucumber HTML/JSON, Allure HTML y (si falla) Surefire |
+
+El job **falla** si falla la corrida de PIM o la de Admin/Login (aunque se generen reportes para diagnóstico).
 
 ### Artefactos generados
 
 Tras cada ejecución del pipeline, los reportes quedan disponibles en la pestaña **Actions → Artifacts** de GitHub:
 
-- `cucumber-report` — Reporte HTML visual
-- `cucumber-report-json` — Datos JSON para integraciones externas
-- `surefire-reports` — Detalle de fallos de JUnit (solo en caso de error)
+- `cucumber-report` — Reporte HTML visual (última corrida, Admin/Login)
+- `cucumber-report-json` — Datos JSON
+- `allure-report-html` — Reporte Allure generado (`allure:report`)
+- `surefire-reports` — Detalle de Surefire (solo si el job falla, 7 días)
+
+En ramas `main` / `master`, el reporte Allure también se publica en **GitHub Pages** (ruta `/allure/latest/`).
