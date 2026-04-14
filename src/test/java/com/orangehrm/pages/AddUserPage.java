@@ -23,8 +23,13 @@ public class AddUserPage extends BasePage {
 
     public void typeEmployeeName(String name) {
         WebElement input = wait.until(ExpectedConditions.elementToBeClickable(employeeNameInput));
+        input.clear();
         input.sendKeys(name);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(autocompleteOption)).click();
+        WebElement option = wait.until(ExpectedConditions.elementToBeClickable(autocompleteOption));
+        option.click();
+        // Esperar que el valor quede registrado en el campo antes de continuar
+        wait.until(ExpectedConditions.attributeToBeNotEmpty(
+                wait.until(ExpectedConditions.visibilityOfElementLocated(employeeNameInput)), "value"));
     }
 
     public void selectStatus(String status) {

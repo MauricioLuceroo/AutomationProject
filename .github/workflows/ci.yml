@@ -54,3 +54,34 @@ jobs:
           name: surefire-reports
           path: target/surefire-reports/
           retention-days: 7
+
+      - name: Prepare latest Allure report for GitHub Pages
+        if: always()
+        run: |
+          mkdir -p target/github-pages/allure/latest
+          latest_report=$(ls -dt target/allure-reports/allure-report-* 2>/dev/null | head -n 1)
+          if [ -n "$latest_report" ]; then
+            cp -R "$latest_report"/. target/github-pages/allure/latest/
+          fi
+
+      - name: Upload Pages artifact
+        if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: target/github-pages
+
+  deploy-pages:
+    name: Deploy Allure to GitHub Pages
+    needs: test
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

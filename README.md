@@ -186,6 +186,8 @@ Tras ejecutar los tests, se generan automáticamente en la carpeta `target/`:
 |---|---|---|
 | `target/cucumber-report.html` | HTML | Reporte visual con detalle de cada escenario |
 | `target/cucumber-report.json` | JSON | Datos crudos del resultado, útil para integraciones CI/CD |
+| `target/allure-results/allure-results-YYYYMMDD-HHMMSS/` | Archivos Allure | Resultados crudos con timestamp |
+| `target/allure-reports/allure-report-YYYYMMDD-HHMMSS/index.html` | HTML (Allure) | Reporte visual avanzado de Allure con timestamp |
 
 Para abrir el reporte HTML:
 
@@ -194,6 +196,41 @@ start target/cucumber-report.html   # Windows
 open target/cucumber-report.html    # macOS
 xdg-open target/cucumber-report.html # Linux
 ```
+
+### Generar y abrir reporte de Allure
+
+```bash
+mvn test
+```
+
+> `mvn test` ya genera el reporte de Allure automáticamente.
+
+Archivo principal de Allure (ábrelo en navegador):
+
+```bash
+target/allure-reports/allure-report-YYYYMMDD-HHMMSS/index.html
+```
+
+En Windows:
+
+```bash
+start target\allure-reports\allure-report-*\index.html
+```
+
+Notas:
+
+- Los reportes anteriores se conservan (no se borran automáticamente).
+- Cada ejecución genera una nueva carpeta con timestamp para resultados y reporte.
+
+### Ver el último Allure desde GitHub
+
+Si habilitas **GitHub Pages** en el repositorio, el pipeline publica automáticamente el último reporte en:
+
+```text
+https://<TU_USUARIO>.github.io/<TU_REPO>/allure/latest/index.html
+```
+
+En GitHub: `Settings` → `Pages` → `Source` = `GitHub Actions`.
 
 ---
 

@@ -23,7 +23,7 @@ public class AdminSteps {
     private static final String[] STATUSES = {"Enabled", "Disabled"};
 
     private static String generarUsername() {
-        return "autouser_" + System.currentTimeMillis();
+        return "autouser_" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 10);
     }
 
     private static String randomRole() {
@@ -78,12 +78,14 @@ public class AdminSteps {
 
     @Cuando("busca el usuario con nombre de usuario {string}")
     public void buscarUsuario(String username) {
+        // Nota: El username debe ser válido (existente en el sistema)
         lastSearchedUsername = username;
         adminPage.searchByUsername(username);
     }
 
     @Cuando("busca el usuario por el nombre de usuario generado")
     public void buscarPorUsernameGenerado() {
+        // Usa el username capturado durante la creación del usuario (válido en el sistema)
         lastSearchedUsername = capturedUsername;
         adminPage.searchByUsernameAndRole(capturedUsername, capturedRole);
     }

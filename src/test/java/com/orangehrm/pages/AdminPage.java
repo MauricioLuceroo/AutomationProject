@@ -1,6 +1,7 @@
 package com.orangehrm.pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -15,6 +16,7 @@ public class AdminPage extends BasePage {
 
     // Campos del panel de búsqueda
     private final By searchUsernameInput = By.xpath("//label[text()='Username']/following::input[1]");
+    private final By searchListBox       = By.cssSelector("div[role='listbox']");
     private final By userRoleDropdown    = By.xpath("//label[text()='User Role']/following::div[contains(@class,'oxd-select-text')][1]");
     private final By userRoleESS         = By.xpath("//div[@role='listbox']//span[text()='ESS']");
     private final By userRoleAdmin       = By.xpath("//div[@role='listbox']//span[text()='Admin']");
@@ -61,6 +63,18 @@ public class AdminPage extends BasePage {
         WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(searchUsernameInput));
         input.clear();
         input.sendKeys(username);
+        
+        // Intentar seleccionar del autocomplete si aparece
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(searchListBox));
+            By matchingOption = By.xpath("//div[@role='listbox']//div[@role='option'][contains(normalize-space(.), "
+                    + toXpathLiteral(username) + ")]"
+            );
+            wait.until(ExpectedConditions.elementToBeClickable(matchingOption)).click();
+        } catch (TimeoutException e) {
+            // Si no hay autocomplete, proceder sin seleccionar
+        }
+        
         wait.until(ExpectedConditions.elementToBeClickable(searchButton)).click();
     }
 
@@ -100,5 +114,32 @@ public class AdminPage extends BasePage {
         By userCell = By.xpath("//div[@role='row']//div[normalize-space()='" + username + "']");
         List<WebElement> cells = driver.findElements(userCell);
         return cells.isEmpty();
+    }
+
+    private String toXpathLiteral(String text) {
+        if (!text.contains("'")) {
+            return "'" + text + "'";
+        }
+        if (!text.contains("\"")) {
+            return "\"" + text + "\"";
+        }
+
+        StringBuilder builder = new StringBuilder("concat(");
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '\'') {
+                builder.append("\"'\"");
+            } else if (c == '\"') {
+                builder.append("'\"'");
+            } else {
+                builder.append("'").append(c).append("'");
+            }
+
+            if (i < text.length() - 1) {
+                builder.append(",");
+            }
+        }
+        builder.append(")");
+        return builder.toString();
     }
 }
