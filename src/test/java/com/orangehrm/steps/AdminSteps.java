@@ -105,7 +105,7 @@ public class AdminSteps {
     public void rellenarFormularioAleatorio() {
         capturedUsername = generarUsername();
         capturedRole     = randomRole();
-        capturedEmployee = "Peter Mac Anderson";
+        capturedEmployee = SharedData.lastCreatedEmployeeFullName != null ? SharedData.lastCreatedEmployeeFullName : "Peter Mac Anderson";
         addUserPage.selectUserRole(capturedRole);
         addUserPage.typeEmployeeName(capturedEmployee);
         addUserPage.selectStatus(randomStatus());
@@ -118,7 +118,7 @@ public class AdminSteps {
     public void crearUsuarioDePruebaAleatorio() {
         capturedUsername = generarUsername();
         capturedRole     = randomRole();
-        capturedEmployee = "Peter Mac Anderson";
+        capturedEmployee = SharedData.lastCreatedEmployeeFullName != null ? SharedData.lastCreatedEmployeeFullName : "Peter Mac Anderson";
         adminPage.clickAdminMenu();
         adminPage.clickAdd();
         addUserPage.selectUserRole(capturedRole);
