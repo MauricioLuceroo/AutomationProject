@@ -2,19 +2,10 @@ name: Selenium Cucumber Tests
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "Prueba1" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "Prueba1" ]
   workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages-${{ github.ref }}
-  cancel-in-progress: false
 
 jobs:
   test:
@@ -42,14 +33,6 @@ jobs:
         env:
           CI: true
 
-      - name: Stage Allure results from PIM
-        if: always()
-        run: |
-          mkdir -p target/allure-results-combined
-          if [ -d target/allure-results ] && [ -n "$(ls -A target/allure-results 2>/dev/null)" ]; then
-            cp -R target/allure-results/. target/allure-results-combined/
-          fi
-
       - name: Run Admin and Login tests (after PIM)
         id: admin_tests
         continue-on-error: true
@@ -57,18 +40,7 @@ jobs:
         env:
           CI: true
 
-      - name: Merge Allure results and generate HTML report
-        if: always()
-        run: |
-          mkdir -p target/allure-results-combined
-          if [ -d target/allure-results ] && [ -n "$(ls -A target/allure-results 2>/dev/null)" ]; then
-            cp -R target/allure-results/. target/allure-results-combined/
-          fi
-          rm -rf target/allure-results
-          mv target/allure-results-combined target/allure-results
-          mvn allure:report
-
-      - name: Fail job if PIM or Admin tests failed
+      - name: Fail job if tests failed
         if: always() && (steps.pim_tests.outcome == 'failure' || steps.admin_tests.outcome == 'failure')
         run: exit 1
 
@@ -88,14 +60,6 @@ jobs:
           path: target/cucumber-report.json
           retention-days: 30
 
-      - name: Upload Allure HTML report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report-html
-          path: target/site/allure-maven-plugin/
-          retention-days: 30
-
       - name: Upload Surefire reports on failure
         if: failure()
         uses: actions/upload-artifact@v4
@@ -104,29 +68,3 @@ jobs:
           path: target/surefire-reports/
           retention-days: 7
 
-      - name: Prepare Allure for GitHub Pages
-        if: always()
-        run: |
-          mkdir -p target/github-pages/allure/latest
-          if [ -d target/site/allure-maven-plugin ]; then
-            cp -R target/site/allure-maven-plugin/. target/github-pages/allure/latest/
-          fi
-
-      - name: Upload Pages artifact
-        if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: target/github-pages
-
-  deploy-pages:
-    name: Deploy Allure to GitHub Pages
-    needs: test
-    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
