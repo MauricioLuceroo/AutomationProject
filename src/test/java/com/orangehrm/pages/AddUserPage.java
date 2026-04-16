@@ -10,7 +10,7 @@ public class AddUserPage extends BasePage {
     private final By employeeNameInput     = By.xpath("//label[text()='Employee Name']/following::input[1]");
     private final By employeeListbox       = By.xpath("//div[@role='listbox']");
     private final By statusDropdown        = By.xpath("//label[text()='Status']/following::div[contains(@class,'oxd-select-text')][1]");
-    private final By usernameInput         = By.xpath("//label[text()='Username']/following::input[1]");
+    private final By usernameInput         = By.xpath("//div[./label[text()='Username']]/following-sibling::div//input");
     private final By passwordInput         = By.xpath("//label[text()='Password']/following::input[1]");
     private final By confirmPasswordInput  = By.xpath("//label[text()='Confirm Password']/following::input[1]");
     private final By saveButton            = By.xpath("//button[@type='submit']");
