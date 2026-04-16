@@ -296,8 +296,9 @@ El proyecto incluye un pipeline de **GitHub Actions** en `.github/workflows/ci.y
 | **Checkout** | Descarga el código del repositorio |
 | **Set up Java 17** | Configura el JDK Temurin 17 con caché de Maven |
 | **Install Chrome** | Instala Google Chrome en el runner |
-| **Run PIM tests** | Ejecuta primero `@pim` y `@pim-negativo` (`mvn test -Dbrowser=chrome`) |
-| **Run Admin + Login** | Luego ejecuta `@admin` y `@login` |
+| **Run Login tests** | Ejecuta primero `@login` |
+| **Run PIM tests** | Ejecuta después `@pim` y `@pim-negativo` |
+| **Run Admin tests** | Ejecuta finalmente `@admin` |
 | **Upload Cucumber reports** | Sube los reportes HTML y JSON de Cucumber |
 | **Upload Surefire reports** | Sube detalles de Surefire si el job falla |
 

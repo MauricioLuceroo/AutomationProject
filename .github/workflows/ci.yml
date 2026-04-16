@@ -9,7 +9,7 @@ on:
 
 jobs:
   test:
-    name: Run E2E Tests (PIM → Admin)
+    name: Run E2E Tests (Login → PIM → Admin)
     runs-on: ubuntu-latest
 
     steps:
@@ -26,22 +26,29 @@ jobs:
       - name: Install Google Chrome
         uses: browser-actions/setup-chrome@v1
 
-      - name: Run PIM tests (first)
+      - name: Run Login tests (first)
+        id: login_tests
+        continue-on-error: true
+        run: mvn test -Dbrowser=chrome -Dcucumber.filter.tags='@login'
+        env:
+          CI: true
+
+      - name: Run PIM tests (second)
         id: pim_tests
         continue-on-error: true
         run: mvn test -Dbrowser=chrome -Dcucumber.filter.tags='@pim or @pim-negativo'
         env:
           CI: true
 
-      - name: Run Admin and Login tests (after PIM)
+      - name: Run Admin tests (third)
         id: admin_tests
         continue-on-error: true
-        run: mvn test -Dbrowser=chrome -Dcucumber.filter.tags='@admin or @login'
+        run: mvn test -Dbrowser=chrome -Dcucumber.filter.tags='@admin'
         env:
           CI: true
 
       - name: Fail job if tests failed
-        if: always() && (steps.pim_tests.outcome == 'failure' || steps.admin_tests.outcome == 'failure')
+        if: always() && (steps.login_tests.outcome == 'failure' || steps.pim_tests.outcome == 'failure' || steps.admin_tests.outcome == 'failure')
         run: exit 1
 
       - name: Upload Cucumber HTML report
