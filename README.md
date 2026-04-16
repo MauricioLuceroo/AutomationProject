@@ -285,7 +285,7 @@ Step Definitions  →  Page Objects  →  WebDriver (Selenium)
 
 El proyecto incluye un pipeline de **GitHub Actions** en `.github/workflows/ci.yml` que se ejecuta automáticamente en:
 
-- Cada `push` a las ramas `main` o `master`
+- Cada `push` a las ramas `main`, `master` o `Prueba1`
 - Cada `pull request` hacia esas ramas
 - Manualmente desde la pestaña **Actions** del repositorio (`workflow_dispatch`)
 
@@ -298,18 +298,17 @@ El proyecto incluye un pipeline de **GitHub Actions** en `.github/workflows/ci.y
 | **Install Chrome** | Instala Google Chrome en el runner |
 | **Run PIM tests** | Ejecuta primero `@pim` y `@pim-negativo` (`mvn test -Dbrowser=chrome`) |
 | **Run Admin + Login** | Luego ejecuta `@admin` y `@login` |
-| **Merge Allure + report** | Une los resultados de ambas corridas y ejecuta `mvn allure:report` |
-| **Upload reports** | Sube Cucumber HTML/JSON, Allure HTML y (si falla) Surefire |
+| **Upload Cucumber reports** | Sube los reportes HTML y JSON de Cucumber |
+| **Upload Surefire reports** | Sube detalles de Surefire si el job falla |
 
-El job **falla** si falla la corrida de PIM o la de Admin/Login (aunque se generen reportes para diagnóstico).
+El job **falla** si falla la corrida de PIM o la de Admin/Login.
 
 ### Artefactos generados
 
 Tras cada ejecución del pipeline, los reportes quedan disponibles en la pestaña **Actions → Artifacts** de GitHub:
 
-- `cucumber-report` — Reporte HTML visual (última corrida, Admin/Login)
-- `cucumber-report-json` — Datos JSON
-- `allure-report-html` — Reporte Allure generado (`allure:report`)
+- `cucumber-report` — Reporte HTML visual de Cucumber (disponible siempre)
+- `cucumber-report-json` — Datos JSON para integraciones (disponible siempre)
 - `surefire-reports` — Detalle de Surefire (solo si el job falla, 7 días)
 
-En ramas `main` / `master`, el reporte Allure también se publica en **GitHub Pages** (ruta `/allure/latest/`).
+Cada vez que ejecutas los tests en CI/CD, se generan automáticamente los reportes de Cucumber en la sección **Artifacts**.
