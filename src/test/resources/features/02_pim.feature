@@ -4,13 +4,6 @@ Característica: Gestión de empleados en el módulo PIM de OrangeHRM
   Quiero agregar, buscar y eliminar empleados desde el módulo PIM
 
   @pim
-  Escenario: Agregar un nuevo empleado en PIM
-    Dado que el usuario hace click en PIM en el menú lateral
-    Cuando hace click en Add para agregar un empleado
-    Y completa el formulario con datos aleatorios
-    Entonces el empleado es guardado exitosamente
-
-  @pim
   Escenario: Buscar un empleado por ID y eliminarlo
     Dado que el usuario registra un empleado con datos aleatorios en PIM
     Y que el usuario hace click en PIM en el menú lateral
@@ -32,3 +25,10 @@ Característica: Gestión de empleados en el módulo PIM de OrangeHRM
     Y completa el formulario sin apellido
     Y intenta guardar el empleado
     Entonces se muestra el mensaje de campo requerido para apellido
+
+  @pim
+  Escenario: Agregar un nuevo empleado en PIM
+    Dado que el usuario hace click en PIM en el menú lateral
+    Cuando hace click en Add para agregar un empleado
+    Y completa el formulario con datos aleatorios
+    Entonces el empleado es guardado exitosamente

@@ -106,9 +106,13 @@ public class PimSteps {
     @Y("completa el formulario con datos aleatorios")
     public void completarFormularioAleatorio() {
         capturedEmployeeId = generarIdEmpleado();
-        addEmployeePage.enterFirstName(randomName(6));
-        addEmployeePage.enterMiddleName(randomName(4));
-        addEmployeePage.enterLastName(randomName(7));
+        String firstName = randomName(6);
+        String middleName = randomName(4);
+        String lastName = randomName(7);
+        SharedData.lastCreatedEmployeeFullName = firstName + " " + middleName + " " + lastName;
+        addEmployeePage.enterFirstName(firstName);
+        addEmployeePage.enterMiddleName(middleName);
+        addEmployeePage.enterLastName(lastName);
         addEmployeePage.enterEmployeeId(capturedEmployeeId);
     }
 

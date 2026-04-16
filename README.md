@@ -69,12 +69,15 @@ AutomationProject/
         │       └── steps/
         │           ├── Hooks.java           # Setup y teardown de escenarios
         │           ├── LoginSteps.java      # Step definitions del login
-        │           └── AdminSteps.java      # Step definitions del módulo Admin
+        │           ├── AdminSteps.java      # Step definitions del módulo Admin
+        │           ├── PimSteps.java        # Step definitions del módulo PIM
+        │           └── SharedData.java      # Clase para compartir datos entre features
         └── resources/
             ├── simplelogger.properties      # Configuración de nivel de logging
             └── features/
-                ├── login.feature            # Escenarios de autenticación
-                └── admin.feature            # Escenarios de gestión de usuarios
+                ├── 01_login.feature         # Escenarios de autenticación
+                ├── 02_pim.feature           # Escenarios de gestión de empleados
+                └── 03_admin.feature         # Escenarios de gestión de usuarios
 ```
 
 ---
@@ -186,35 +189,24 @@ Tras ejecutar los tests, se generan automáticamente en la carpeta `target/`:
 |---|---|---|
 | `target/cucumber-report.html` | HTML | Reporte visual con detalle de cada escenario |
 | `target/cucumber-report.json` | JSON | Datos crudos del resultado, útil para integraciones CI/CD |
-| `target/allure-results/` | Archivos Allure | Resultados crudos (JSON/XML) generados al ejecutar tests |
-| `target/site/allure-maven-plugin/index.html` | HTML (Allure) | Reporte visual Allure (generado con `mvn allure:report`) |
 
-Para abrir el reporte HTML:
+### 📊 Abrir el Reporte de Cucumber
 
-```bash
-start target/cucumber-report.html   # Windows
-open target/cucumber-report.html    # macOS
-xdg-open target/cucumber-report.html # Linux
+Después de ejecutar `mvn test`, abre el reporte HTML:
+
+**Windows:**
+```powershell
+start target\cucumber-report.html
 ```
 
-### Generar y abrir reporte de Allure
-
-Después de ejecutar tests:
-
+**macOS:**
 ```bash
-mvn allure:report
+open target/cucumber-report.html
 ```
 
-Archivo principal (ábrelo en el navegador):
-
+**Linux:**
 ```bash
-target/site/allure-maven-plugin/index.html
-```
-
-En Windows:
-
-```bash
-start target\site\allure-maven-plugin\index.html
+xdg-open target/cucumber-report.html
 ```
 
 ### Orden recomendado: PIM y luego Admin
@@ -224,20 +216,17 @@ En el módulo **Admin → Add User**, el campo *Employee Name* es un autocomplet
 ```bash
 mvn test "-Dcucumber.filter.tags=@pim or @pim-negativo"
 mvn test "-Dcucumber.filter.tags=@admin or @login"
-mvn allure:report
 ```
 
 En **PowerShell**, las comillas alrededor del parámetro `-Dcucumber.filter.tags=...` son obligatorias si el valor lleva espacios.
 
-### Ver el último Allure desde GitHub
+**Nota:** Los tests están configurados para ejecutarse en orden alfabético por archivo `.feature` (01_login.feature, 02_pim.feature, 03_admin.feature), asegurando que el empleado creado en PIM esté disponible para los tests de Admin.
 
-Si habilitas **GitHub Pages** en el repositorio, el pipeline publica automáticamente el último reporte en:
+### 🔗 Enlace Directo al Reporte
 
-```text
-https://<TU_USUARIO>.github.io/<TU_REPO>/allure/latest/index.html
-```
+Después de ejecutar `mvn test`, haz click aquí para abrir el reporte:
 
-En GitHub: `Settings` → `Pages` → `Source` = `GitHub Actions`.
+**[📊 Abrir Reporte Cucumber](./target/cucumber-report.html)**
 
 ---
 
