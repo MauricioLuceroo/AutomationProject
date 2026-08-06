@@ -1,5 +1,4 @@
 target/
-allure-results/
 .idea/
 *.iml
 .classpath

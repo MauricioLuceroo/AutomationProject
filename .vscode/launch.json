@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Run Cucumber tests",
+      "request": "launch",
+      "mainClass": "com.orangehrm.runners.CucumberRunnerTest",
+      "projectName": "tu-nombre-de-proyecto-en-pom"
+    },
+    {
+      "type": "java",
       "name": "Adjuntar a tests Maven (puerto 5005)",
       "request": "attach",
       "hostName": "localhost",

@@ -1,6 +1,5 @@
 package com.orangehrm.config;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -9,6 +8,8 @@ import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.safari.SafariDriver;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
 
 public final class DriverManager {
 
@@ -55,7 +56,7 @@ public final class DriverManager {
     private static boolean isHeadless() {
         return "true".equalsIgnoreCase(System.getProperty("headless"))
                 || "true".equalsIgnoreCase(System.getenv("HEADLESS"))
-                || System.getenv("CI") != null;
+                || "true".equalsIgnoreCase(System.getenv("CI"));
     }
 
     private static WebDriver instantiate(Browser browser) {
@@ -65,7 +66,7 @@ public final class DriverManager {
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions options = new ChromeOptions();
                 if (headless) {
-                    options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
+                    options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--window-size=1920,1080");
                 }
                 yield new ChromeDriver(options);
             }
@@ -73,7 +74,7 @@ public final class DriverManager {
                 WebDriverManager.edgedriver().setup();
                 EdgeOptions options = new EdgeOptions();
                 if (headless) {
-                    options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
+                    options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--window-size=1920,1080");
                 }
                 yield new EdgeDriver(options);
             }
@@ -81,7 +82,7 @@ public final class DriverManager {
                 WebDriverManager.firefoxdriver().setup();
                 FirefoxOptions options = new FirefoxOptions();
                 if (headless) {
-                    options.addArguments("--headless");
+                    options.addArguments("--headless", "--window-size=1920,1080");
                 }
                 yield new FirefoxDriver(options);
             }

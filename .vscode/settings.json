@@ -1,8 +1,9 @@
 {
-    "java.compile.nullAnalysis.mode": "automatic",
+    "java.compile.nullAnalysis.mode": "disabled",
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.import.maven.enabled": true,
     "java.test.editor.enableShortcuts": true,
     "java.debug.settings.hotCodeReplace": "auto",
-    "java.debug.settings.enableRunDebugCodeLens": true
+    "java.debug.settings.enableRunDebugCodeLens": true,
+    "java.debug.settings.onBuildFailureProceed": true  
 }

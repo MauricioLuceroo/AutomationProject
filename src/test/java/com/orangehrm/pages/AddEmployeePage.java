@@ -5,9 +5,6 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class AddEmployeePage extends BasePage {
 
     // Campos del formulario de agregar empleado
@@ -21,26 +18,39 @@ public class AddEmployeePage extends BasePage {
 
     // Botones
     private final By saveButton = By.xpath("//button[@type='submit' and normalize-space()='Save']");
+    private final By loadingSpinner = By.cssSelector("div.oxd-form-loader");
 
     public void enterFirstName(String firstName) {
+        try {
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(loadingSpinner));
+        } catch (Exception ignored) {}
         WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(firstNameInput));
         input.clear();
         input.sendKeys(firstName);
     }
 
     public void enterMiddleName(String middleName) {
+        try {
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(loadingSpinner));
+        } catch (Exception ignored) {}
         WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(middleNameInput));
         input.clear();
         input.sendKeys(middleName);
     }
 
     public void enterLastName(String lastName) {
+        try {
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(loadingSpinner));
+        } catch (Exception ignored) {}
         WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(lastNameInput));
         input.clear();
         input.sendKeys(lastName);
     }
 
     public void enterEmployeeId(String employeeId) {
+        try {
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(loadingSpinner));
+        } catch (Exception ignored) {}
         WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(employeeIdInput));
         input.click();
         input.clear();
@@ -55,17 +65,6 @@ public class AddEmployeePage extends BasePage {
 
     public void assertSaved() {
         wait.until(ExpectedConditions.urlContains("viewPersonalDetails"));
-    }
-
-    public String getCurrentEmployeeId() {
-        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(employeeIdInput));
-        return input.getAttribute("value").trim();
-    }
-
-    public String getEmpNumberFromCurrentUrl() {
-        String url = driver.getCurrentUrl();
-        Matcher matcher = Pattern.compile("/empNumber/(\\d+)").matcher(url);
-        return matcher.find() ? matcher.group(1) : "";
     }
 
     public boolean isLastNameRequiredErrorVisible() {

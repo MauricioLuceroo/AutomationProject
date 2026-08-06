@@ -31,7 +31,7 @@ Suite de pruebas end-to-end que valida los flujos principales de [OrangeHRM](htt
 
 | Tecnología | Versión | Rol |
 |---|---|---|
-| **Java** | 17 | Lenguaje principal |
+| **Java** | 25 | Lenguaje principal |
 | **Maven** | 3.x | Gestión de dependencias y build |
 | **Selenium WebDriver** | 4.27.0 | Automatización del navegador |
 | **WebDriverManager** | 5.9.2 | Gestión automática de drivers de navegador |
@@ -84,7 +84,7 @@ AutomationProject/
 
 ## Prerrequisitos
 
-- **Java 17** o superior instalado y configurado en el `PATH`
+- **Java 25** o superior instalado y configurado en el `PATH`
 - **Maven 3.6+** instalado y configurado en el `PATH`
 - Un navegador instalado (Chrome por defecto; también Edge, Firefox o Safari)
 
@@ -139,6 +139,36 @@ mvn test -Dcucumber.filter.tags="@login"
 mvn test -Dcucumber.filter.tags="@pim"
 
 # Negativos
+mvn test -Dcucumber.filter.tags="@pim-negativo"
+```
+
+### Ejecutar un feature específico
+
+```bash
+mvn test -Dcucumber.features="classpath:features/01_login.feature"
+```
+
+```bash
+mvn test -Dcucumber.features="classpath:features/02_pim.feature"
+```
+
+### Ejecutar un escenario específico por nombre
+
+```bash
+mvn test -Dcucumber.filter.name="Login exitoso"
+```
+
+```bash
+mvn test -Dcucumber.filter.name="Buscar empleado con ID inexistente"
+```
+
+### Ejecutar un escenario específico por tag
+
+```bash
+mvn test -Dcucumber.filter.tags="@admin"
+```
+
+```bash
 mvn test -Dcucumber.filter.tags="@pim-negativo"
 ```
 
@@ -240,6 +270,15 @@ El navegador se puede indicar de tres formas (en orden de prioridad):
 
 Navegadores soportados: `chrome`, `firefox`, `edge`, `safari`.
 
+### Modo headless
+
+El modo headless se activa sólo de forma explícita con:
+
+- `-Dheadless=true` en la línea de comandos, o
+- `HEADLESS=true` como variable de entorno.
+
+En GitHub Actions, la variable `CI=true` ya está presente, pero el pipeline no debe asumir headless automáticamente. El fallo que estabas viendo puede provenir de que el driver activaba headless por detectar el entorno CI, lo que no siempre es compatible con el runner y la configuración de navegador en GitHub Actions.
+
 ---
 
 ## Publicar en GitHub
@@ -294,7 +333,7 @@ El proyecto incluye un pipeline de **GitHub Actions** en `.github/workflows/ci.y
 | Paso | Descripción |
 |---|---|
 | **Checkout** | Descarga el código del repositorio |
-| **Set up Java 17** | Configura el JDK Temurin 17 con caché de Maven |
+| **Set up Java 25** | Configura el JDK Temurin 25 con caché de Maven |
 | **Install Chrome** | Instala Google Chrome en el runner |
 | **Run Login tests** | Ejecuta primero `@login` |
 | **Run PIM tests** | Ejecuta después `@pim` y `@pim-negativo` |

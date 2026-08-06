@@ -1,6 +1,7 @@
 package com.orangehrm.pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
@@ -14,21 +15,39 @@ import java.time.Duration;
 
 public class PimPage extends BasePage {
 
+    private final JavascriptExecutor js = (JavascriptExecutor) driver;
+
     // Menú lateral
-    private final By pimMenuLink = By.xpath("//span[contains(@class, 'oxd-text--span') and text()='PIM']");
+    private final By pimMenuLink = By.xpath("//span[text()='PIM']");
+    private final By menuToggle = By.xpath("//button[contains(@class, 'oxd-main-menu-button')]");
 
     // Botón Add de la lista de empleados
     private final By addEmployeeButton = By.xpath("//button[normalize-space()='Add']");
 
     // Campos del formulario de búsqueda
     private final By employeeIdSearchInput = By.xpath("//div[./label[text()='Employee Id']]/following-sibling::div//input");
-    private final By searchButton = By.xpath("//button[normalize-space()='Search']");
+    /** Botón de búsqueda del formulario de filtros (no depende del texto por idioma). */
+    private final By searchButton = By.cssSelector("div.oxd-form-actions button[type='submit']");
     private final By deleteConfirmButton = By.xpath("//button[normalize-space()='Yes, Delete']");
     private final By loadingSpinner = By.cssSelector("div.oxd-form-loader");
     private final By noRecordsFound = By.xpath("//*[normalize-space()='No Records Found']");
 
+    // Botón para expandir el panel de búsqueda en pantallas pequeñas
+    private final By expandSearchButton = By.xpath("//button[contains(@class, 'oxd-icon-button') and .//i[contains(@class, 'bi-caret-down-fill')]]");
+
     public void clickPimMenu() {
-        wait.until(ExpectedConditions.elementToBeClickable(pimMenuLink)).click();
+        // Intentar expandir el menú si está colapsado
+        try {
+            WebElement toggle = wait.until(ExpectedConditions.presenceOfElementLocated(menuToggle));
+            js.executeScript("arguments[0].click();", toggle);
+            // Esperar un poco para que se expanda
+            Thread.sleep(500);
+        } catch (TimeoutException | InterruptedException ignored) {
+            // El toggle no está presente o no es necesario
+        }
+        wait.until(ExpectedConditions.presenceOfElementLocated(pimMenuLink));
+        WebElement pimElement = driver.findElement(pimMenuLink);
+        js.executeScript("arguments[0].click();", pimElement);
         wait.until(ExpectedConditions.urlContains("pim/viewEmployeeList"));
     }
 
@@ -41,10 +60,23 @@ public class PimPage extends BasePage {
     }
 
     public void searchByEmployeeId(String employeeId) {
-        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(employeeIdSearchInput));
-        input.clear();
-        input.sendKeys(employeeId);
-        wait.until(ExpectedConditions.elementToBeClickable(searchButton)).click();
+        expandSearchPanelIfNeeded();
+        WebElement input = wait.until(ExpectedConditions.presenceOfElementLocated(employeeIdSearchInput));
+        js.executeScript("arguments[0].scrollIntoView(true);", input);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        js.executeScript("arguments[0].value = arguments[1];", input, employeeId);
+        WebElement searchBtn = wait.until(ExpectedConditions.presenceOfElementLocated(searchButton));
+        js.executeScript("arguments[0].scrollIntoView(true);", searchBtn);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        js.executeScript("arguments[0].click();", searchBtn);
         try {
             wait.until(ExpectedConditions.invisibilityOfElementLocated(loadingSpinner));
         } catch (TimeoutException ignored) {
@@ -107,5 +139,17 @@ public class PimPage extends BasePage {
             // Si no aparece ninguna señal, igual validamos por presencia real de filas.
         }
         return driver.findElements(row).isEmpty();
+    }
+
+    public void expandSearchPanelIfNeeded() {
+        try {
+            // Intentar encontrar el botón de expandir
+            WebElement expandBtn = driver.findElement(expandSearchButton);
+            actions.moveToElement(expandBtn).click().perform();
+            // Esperar un poco para que se expanda
+            Thread.sleep(500);
+        } catch (Exception ignored) {
+            // Si no hay botón o no es necesario, continuar
+        }
     }
 }

@@ -1,14 +1,15 @@
 package com.orangehrm.steps;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.orangehrm.pages.AddEmployeePage;
 import com.orangehrm.pages.PimPage;
+
 import io.cucumber.java.es.Cuando;
 import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Entonces;
 import io.cucumber.java.es.Y;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PimSteps {
 
@@ -42,12 +43,17 @@ public class PimSteps {
         pimPage.clickAddEmployee();
     }
 
-    @Y("completa el formulario con nombre {string}, segundo nombre {string} y apellido {string}")
-    public void completarFormulario(String nombre, String segundoNombre, String apellido) {
+    @Y("completa el formulario con datos aleatorios para el empleado")
+    public void completarFormularioAleatorioParaEmpleado() {
         capturedEmployeeId = generarIdEmpleado();
-        addEmployeePage.enterFirstName(nombre);
-        addEmployeePage.enterMiddleName(segundoNombre);
-        addEmployeePage.enterLastName(apellido);
+        String firstName = randomName(6);
+        String middleName = randomName(4);
+        String lastName = randomName(7);
+        String fullName = firstName + " " + middleName + " " + lastName;
+        SharedData.lastCreatedEmployeeFullName = fullName;
+        addEmployeePage.enterFirstName(firstName);
+        addEmployeePage.enterMiddleName(middleName);
+        addEmployeePage.enterLastName(lastName);
         addEmployeePage.enterEmployeeId(capturedEmployeeId);
     }
 
