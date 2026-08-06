@@ -2,9 +2,9 @@ name: Selenium Cucumber Tests
 
 on:
   push:
-    branches: [ "main", "master", "Prueba1" ]
+    branches: [ "main", "master" ]
   pull_request:
-    branches: [ "main", "master", "Prueba1" ]
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
@@ -16,44 +16,42 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 25
+      
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: '25'
+          java-version: '21'
           distribution: 'temurin'
           cache: maven
 
-      - name: Install Google Chrome
-        uses: browser-actions/setup-chrome@v1
-
-      - name: Install Xvfb
-        run: sudo apt-get update && sudo apt-get install -y xvfb
-
+      
       - name: Run Login tests (first)
         id: login_tests
         continue-on-error: true
-        run: xvfb-run -a mvn test -Dbrowser=chrome -Dcucumber.filter.tags='@login'
+        run: mvn test -Dbrowser=chrome -Dheadless=true -Dcucumber.filter.tags='@login'
         env:
           CI: true
 
       - name: Run PIM tests (second)
         id: pim_tests
         continue-on-error: true
-        run: xvfb-run -a mvn test -Dbrowser=chrome -Dcucumber.filter.tags='@pim or @pim-negativo'
+        run: mvn test -Dbrowser=chrome -Dheadless=true -Dcucumber.filter.tags='@pim or @pim-negativo'
         env:
           CI: true
 
       - name: Run Admin tests (third)
         id: admin_tests
         continue-on-error: true
-        run: xvfb-run -a mvn test -Dbrowser=chrome -Dcucumber.filter.tags='@admin'
+        run: mvn test -Dbrowser=chrome -Dheadless=true -Dcucumber.filter.tags='@admin'
         env:
           CI: true
 
+      
       - name: Fail job if tests failed
         if: always() && (steps.login_tests.outcome == 'failure' || steps.pim_tests.outcome == 'failure' || steps.admin_tests.outcome == 'failure')
         run: exit 1
 
+      
       - name: Upload Cucumber HTML report
         if: always()
         uses: actions/upload-artifact@v4
@@ -71,7 +69,7 @@ jobs:
           retention-days: 30
 
       - name: Upload Surefire reports on failure
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: surefire-reports
